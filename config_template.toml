@@ -1,0 +1,18 @@
+bot_token = 'TOKEN' # The token for your bot
+
+command_prefix = '!' # Prefix for all commands
+
+role_template_id = 123456789 # The ID of the role that you want to use as the default
+guild_id = 123456789 # ID of the guild
+
+[messages]
+    no_permission = 'You do not have permissions to create roles.' # When the User doesn't have the "manage_guild" permission
+    no_name = 'Please include a name for this new role.' # Role has no name
+    unknown_error = 'An unknown error occured...' # Unknown error
+    
+    # {mention} = New Role's mention
+    #    {name} = New Role's name
+    #  {author} = Who created the role
+    #      {id} = ID of the new role
+    # Discord Formatting Works
+    role_created = 'Role {mention} created by {author}!`'

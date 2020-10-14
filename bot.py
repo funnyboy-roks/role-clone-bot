@@ -21,10 +21,12 @@ async def on_ready():
     all_channels = []
     for channel in bot.get_all_channels():
         channel_data = {}
-        if str(channel.type) != 'category':  # If channel is not a 'category' channel
+        channel_ignored = channel.id in config['ignored_channel_ids'] or channel.category_id in config['ignored_category_ids']
+        if str(channel.type) != 'category' and not channel_ignored:  # If channel is not a 'category' channel
             channel_data['channel'] = channel
             channel_data['overwrite'] = channel.overwrites_for(role_template)
             all_channels.append(channel_data)  # Add channel to list
+    # print('\n'.join([','.join((c['channel'].name, str(c['channel'].type))) for c in all_channels]))
 
 
 @bot.command()
@@ -42,16 +44,17 @@ async def create_role(ctx, *role_name):
         # If the channel doesn't have the same permissions as the default role(@everyone)
         if channel['overwrite'] != channel['channel'].overwrites_for(guild.default_role):
             # Set the custom permissions
-            print(channel['channel'].name)
+            # print(channel['channel'].name)
             await channel['channel'].set_permissions(new_role, overwrite=channel['overwrite'])
-    await ctx.send(
-        config['messages']['role_created']
-            .format(
-                mention=new_role.mention,  
-                name=new_role.name,
-                author=ctx.author.name,
-                id=new_role.id
-            ))  # Send the complete message
+    if len(config['messages']['role_created']) == 0:
+        await ctx.send(
+            config['messages']['role_created']
+                .format(
+                    mention=new_role.mention,  
+                    name=new_role.name,
+                    author=ctx.author.name,
+                    id=new_role.id
+                ))  # Send the complete message
 
 
 @create_role.error

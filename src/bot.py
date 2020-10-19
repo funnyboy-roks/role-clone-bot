@@ -22,11 +22,12 @@ async def on_ready():
     for channel in bot.get_all_channels():
         channel_data = {}
         channel_ignored = channel.id in config['ignored_channel_ids'] or channel.category_id in config['ignored_category_ids']
-        if str(channel.type) != 'category' and not channel_ignored:  # If channel is not a 'category' channel
+        # If channel is not a 'category' channel
+        if str(channel.type) != 'category' and not channel_ignored:
             channel_data['channel'] = channel
             channel_data['overwrite'] = channel.overwrites_for(role_template)
             all_channels.append(channel_data)  # Add channel to list
-    # print('\n'.join([','.join((c['channel'].name, str(c['channel'].type))) for c in all_channels]))
+    print("Channel - Type\n{0}".format('\n'.join([f'{c["channel"].name} - {str(c["channel"].type)}' for c in all_channels])))
 
 
 @bot.command()
@@ -38,6 +39,7 @@ async def create_role(ctx, *role_name):
 
     # Convert list to string from *role_name parameter
     new_role_name = ' '.join(role_name)
+
     # Create the role
     new_role = await guild.create_role(name=new_role_name, permissions=role_template.permissions)
     for channel in all_channels:
@@ -46,22 +48,26 @@ async def create_role(ctx, *role_name):
             # Set the custom permissions
             # print(channel['channel'].name)
             await channel['channel'].set_permissions(new_role, overwrite=channel['overwrite'])
-    if len(config['messages']['role_created']) == 0:
+    if len(config['messages']['role_created']) > 0:
+
         await ctx.send(
             config['messages']['role_created']
-                .format(
-                    mention=new_role.mention,  
-                    name=new_role.name,
-                    author=ctx.author.name,
-                    id=new_role.id
-                ))  # Send the complete message
+            .format(
+                mention=new_role.mention,
+                name=new_role.name,
+                author=ctx.author.name,
+                id=new_role.id
+            ))  # Send the complete message
+        print(f'Role "{new_role.name}" created by {str(ctx.author)}.')
 
 
 @create_role.error
 async def create_role_error(ctx, error):
-    if isinstance(error, commands.MissingPermissions): # User doesn't have "manage_guild" permission
+    # User doesn't have "manage_guild" permission
+    if isinstance(error, commands.MissingPermissions):
         await ctx.send(config['messages']['no_permission'])
+        print(f'User: {ctx.author} tried to create a role, but didn\'t have the required permissions.')
     else:
         await ctx.send(config['messages']['unknown_error'])
-        print(error)
+        print(f'Other Error: {error}')
 bot.run(config['bot_token'])  # Run Bot
